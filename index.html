@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d6b50">
+<meta name="robots" content="noindex">
+<title>Formulir PPDB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  /* Layout: satu kolom 640px; kepala identitas sekolah, formulir (data, lalu dua foto), lalu layar "PDF siap dikirim" dengan tombol WhatsApp. */
+  :root {
+    --bg: #f2f5f3; --surface: #ffffff; --ink: #13241f; --muted: #55655f; --line: #d3ddd9;
+    --accent: #0d6b50; --accent-ink: #ffffff; --accent-soft: #dcefe7;
+    --err: #b3261e; --err-bg: #fbe4e2;
+    --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1814; --surface: #16231e; --ink: #e5efea; --muted: #9bb0a8; --line: #2a3c35;
+      --accent: #4cc79d; --accent-ink: #06261b; --accent-soft: #1c382e; --err: #ff9a91; --err-bg: #3a1c19;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1814; --surface: #16231e; --ink: #e5efea; --muted: #9bb0a8; --line: #2a3c35;
+    --accent: #4cc79d; --accent-ink: #06261b; --accent-soft: #1c382e; --err: #ff9a91; --err-bg: #3a1c19;
+    color-scheme: dark;
+  }
+  [hidden] { display: none !important; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--font-body);
+    padding-block: 0 32px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  header.top { padding-block: 22px 16px; display: flex; flex-direction: column; gap: 2px; }
+  .eyebrow { font: 500 12px/1.4 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); overflow-wrap: anywhere; }
+  h1 { font: 700 28px/1.15 var(--font-display); margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 16px; }
+  .panel h2 { font: 600 20px/1.25 var(--font-display); margin: 0 0 4px; }
+  .lead { color: var(--muted); font-size: 15px; margin: 0 0 6px; }
+
+  form { display: flex; flex-direction: column; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 0 12px; }
+  .field { display: flex; flex-direction: column; gap: 6px; padding-top: 14px; min-width: 0; }
+  label { font-weight: 600; font-size: 15px; }
+  label .opt { color: var(--muted); font-weight: 400; }
+  input, select, textarea {
+    width: 100%; min-height: 48px; padding: 11px 12px; font: inherit; font-size: 16px;
+    border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink);
+  }
+  textarea { min-height: 88px; resize: vertical; }
+  input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--err); }
+  .err-msg { color: var(--err); font-size: 14px; }
+  .hint { color: var(--muted); font-size: 13px; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .section-title { font: 600 17px/1.3 var(--font-display); margin: 22px 0 0; padding-top: 16px; border-top: 1px solid var(--line); }
+  .submit-bar { position: sticky; bottom: 0; margin-top: 16px; padding: 12px 0 max(4px, env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); }
+  button, .btn { font: inherit; font-weight: 600; cursor: pointer; }
+  .btn { min-height: 48px; padding: 11px 18px; border-radius: 12px; border: 1.5px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-size: 16px; width: 100%; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; text-align: center; }
+  .btn.alt { background: transparent; color: var(--accent); }
+  .btn.sm { min-height: 44px; width: auto; padding: 9px 14px; font-size: 15px; }
+  .btn[disabled] { opacity: .6; cursor: progress; }
+  .stack { display: flex; flex-direction: column; gap: 10px; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .ul { list-style: none; margin: 12px 0 4px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .ul li { display: flex; justify-content: space-between; gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 15px; }
+  .st-ok { color: var(--accent); font-weight: 600; } .st-gagal { color: var(--err); font-weight: 600; } .st-no { color: var(--muted); }
+  .steps { margin: 12px 0 16px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; counter-reset: s; }
+  .steps li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+  .steps li::before { content: counter(s); width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 700; display: grid; place-items: center; }
+  .nomor { font: 500 22px/1.2 var(--font-mono); letter-spacing: .02em; margin: 10px 0 4px; padding: 14px; background: var(--accent-soft); border-radius: 12px; overflow-wrap: anywhere; }
+  .fname { font: 500 13px/1.4 var(--font-mono); color: var(--muted); overflow-wrap: anywhere; margin-bottom: 4px; }
+  .note { margin: 0 0 12px; padding: 11px 13px; border-radius: 12px; background: var(--accent-soft); font-size: 14px; }
+  .photo-box { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .photo-box img { width: 100%; max-height: 280px; object-fit: contain; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; }
+  .photo-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(18px, env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-size: 14px; max-width: calc(100vw - 32px); z-index: 20; text-align: center; }
+  @media (min-width: 560px) { .grid.two { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow" id="eyebrow"></span>
+    <h1>Formulir Pendaftaran Calon Taruna</h1>
+  </header>
+
+  <section class="panel" id="formPanel">
+    <h2>Data calon taruna</h2>
+    <p class="lead">Isi semua kolom bertanda *. Setelah dikirim, data dan foto langsung diterima panitia. Anda mendapat nomor pendaftaran dan bukti PDF.</p>
+    <p class="note" id="cfgWarn" hidden><strong>Aplikasi belum disambungkan ke Supabase.</strong> Isi supabaseUrl dan supabaseKey di file config.js.</p>
+    <form id="form" novalidate autocomplete="on">
+      <div class="field">
+        <label for="nama_lengkap">Nama lengkap calon taruna *</label>
+        <input id="nama_lengkap" name="nama_lengkap" autocomplete="name" autocapitalize="words" enterkeyhint="next" maxlength="120">
+        <span class="err-msg" data-err="nama_lengkap"></span>
+      </div>
+      <div class="grid two">
+      <div class="field">
+        <label for="tempat_lahir">Tempat lahir *</label>
+        <input id="tempat_lahir" name="tempat_lahir" autocapitalize="words" enterkeyhint="next" maxlength="80">
+        <span class="err-msg" data-err="tempat_lahir"></span>
+      </div>
+      <div class="field">
+        <label for="tanggal_lahir">Tanggal lahir *</label>
+        <input id="tanggal_lahir" name="tanggal_lahir" type="date" autocomplete="bday">
+        <span class="err-msg" data-err="tanggal_lahir"></span>
+      </div>
+      </div>
+      <div class="grid two">
+      <div class="field">
+        <label for="jenis_kelamin">Jenis kelamin *</label>
+        <select id="jenis_kelamin" name="jenis_kelamin">
+          <option value="">Pilih...</option>
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
+        </select>
+        <span class="err-msg" data-err="jenis_kelamin"></span>
+      </div>
+      <div class="field">
+        <label for="agama">Agama *</label>
+        <select id="agama" name="agama">
+          <option value="">Pilih...</option>
+          <option value="Islam">Islam</option>
+          <option value="Kristen">Kristen</option>
+          <option value="Katolik">Katolik</option>
+          <option value="Hindu">Hindu</option>
+          <option value="Buddha">Buddha</option>
+          <option value="Konghucu">Konghucu</option>
+        </select>
+        <span class="err-msg" data-err="agama"></span>
+      </div>
+      </div>
+      <div class="field">
+        <label for="alamat">Alamat rumah *</label>
+        <textarea id="alamat" name="alamat" rows="3" autocomplete="street-address" maxlength="250"></textarea>
+        <span class="err-msg" data-err="alamat"></span>
+      </div>
+      <div class="field">
+        <label for="asal_sekolah">Asal SMP/MTs *</label>
+        <input id="asal_sekolah" name="asal_sekolah" autocapitalize="words" enterkeyhint="next" maxlength="120">
+        <span class="err-msg" data-err="asal_sekolah"></span>
+      </div>
+      <div class="field">
+        <label for="no_hp">No. WA calon taruna *</label>
+        <input id="no_hp" name="no_hp" type="tel" inputmode="tel" autocomplete="tel" enterkeyhint="next" maxlength="15">
+        <span class="hint">Contoh: 081234567890</span>
+        <span class="err-msg" data-err="no_hp"></span>
+      </div>
+      <div class="field">
+        <label for="kompetensi">Kompetensi keahlian dipilih *</label>
+        <select id="kompetensi" name="kompetensi">
+          <option value="">Pilih...</option>
+          <option value="Nautika Kapal Niaga">A. Nautika Kapal Niaga</option>
+          <option value="Teknika Kapal Niaga">B. Teknika Kapal Niaga</option>
+        </select>
+        <span class="hint">Pilih salah satu.</span>
+        <span class="err-msg" data-err="kompetensi"></span>
+      </div>
+      <h3 class="section-title">Data orang tua</h3>
+      <div class="grid two">
+      <div class="field">
+        <label for="nama_ayah">Nama bapak</label>
+        <input id="nama_ayah" name="nama_ayah" autocapitalize="words" enterkeyhint="next" maxlength="120">
+        <span class="err-msg" data-err="nama_ayah"></span>
+      </div>
+      <div class="field">
+        <label for="nama_ibu">Nama ibu</label>
+        <input id="nama_ibu" name="nama_ibu" autocapitalize="words" enterkeyhint="next" maxlength="120">
+        <span class="err-msg" data-err="nama_ibu"></span>
+      </div>
+      </div>
+      <div class="grid two">
+      <div class="field">
+        <label for="pekerjaan_ayah">Pekerjaan bapak <span class="opt">(opsional)</span></label>
+        <input id="pekerjaan_ayah" name="pekerjaan_ayah" autocapitalize="sentences" enterkeyhint="next" maxlength="80">
+        <span class="err-msg" data-err="pekerjaan_ayah"></span>
+      </div>
+      <div class="field">
+        <label for="pekerjaan_ibu">Pekerjaan ibu <span class="opt">(opsional)</span></label>
+        <input id="pekerjaan_ibu" name="pekerjaan_ibu" autocapitalize="sentences" enterkeyhint="next" maxlength="80">
+        <span class="err-msg" data-err="pekerjaan_ibu"></span>
+      </div>
+      </div>
+      <div class="grid two">
+      <div class="field">
+        <label for="no_hp_ortu">No. WA orang tua *</label>
+        <input id="no_hp_ortu" name="no_hp_ortu" type="tel" inputmode="tel" enterkeyhint="next" maxlength="15">
+        <span class="err-msg" data-err="no_hp_ortu"></span>
+      </div>
+      <div class="field">
+        <label for="no_hp_ortu_milik">Nomor milik *</label>
+        <select id="no_hp_ortu_milik" name="no_hp_ortu_milik">
+          <option value="">Pilih...</option>
+          <option value="Bapak">Bapak</option>
+          <option value="Ibu">Ibu</option>
+        </select>
+        <span class="err-msg" data-err="no_hp_ortu_milik"></span>
+      </div>
+      </div>
+      <p class="hint" style="margin:6px 0 0">Isi nama bapak, nama ibu, atau keduanya.</p>
+      <h3 class="section-title">Informasi pendaftaran</h3>
+      <p class="note" style="margin:10px 0 0"><strong>Biaya pendaftaran: GRATIS untuk 100 pendaftar pertama.</strong></p>
+      <div class="field">
+        <label for="sumber_info">Mengetahui informasi PPDB dari *</label>
+        <select id="sumber_info" name="sumber_info">
+          <option value="">Pilih...</option>
+          <option value="IG / Facebook / YouTube">IG / Facebook / YouTube</option>
+          <option value="Website">Website</option>
+          <option value="Alumni/Taruna SMKP Akpelni">Alumni/Taruna SMKP Akpelni</option>
+          <option value="Brosur/Spanduk">Brosur/Spanduk</option>
+          <option value="Saudara">Saudara</option>
+          <option value="Sekolah asal">Sekolah asal</option>
+          <option value="Warung">Warung</option>
+        </select>
+        <span class="hint">Pilih salah satu.</span>
+        <span class="err-msg" data-err="sumber_info"></span>
+      </div>
+      <div class="field" id="sumberDetailField" hidden>
+        <label for="sumber_detail" id="sumberDetailLabel">Keterangan *</label>
+        <input id="sumber_detail" name="sumber_detail" autocapitalize="words" maxlength="120">
+        <span class="err-msg" data-err="sumber_detail"></span>
+      </div>
+      <h3 class="section-title">Foto</h3>
+      <p class="hint" style="margin:4px 0 0">Foto diunggah ke panitia saat Anda menekan Kirim pendaftaran. Foto dikecilkan otomatis agar cepat terkirim.</p>
+
+      <div class="field" data-photo="diri">
+        <label for="foto_diri">Pas foto <span class="opt">(opsional)</span></label>
+        <input id="foto_diri" class="photo-input" type="file" accept="image/*" aria-describedby="foto_diri-hint">
+        <span class="hint" id="foto_diri-hint">Wajah menghadap depan, latar polos, terlihat jelas.</span>
+        <span class="err-msg photo-err"></span>
+        <div class="photo-box" hidden>
+          <img alt="Pratinjau pas foto">
+          <div class="photo-row"><span class="hint photo-info"></span><button type="button" class="btn alt sm photo-remove">Hapus foto</button></div>
+        </div>
+      </div>
+
+      <div class="field" data-photo="akte">
+        <label for="foto_akte">Foto Akta Lahir <span class="opt">(opsional)</span></label>
+        <input id="foto_akte" class="photo-input" type="file" accept="image/*" aria-describedby="foto_akte-hint">
+        <span class="hint" id="foto_akte-hint">Foto atau scan akta lahir yang jelas dan terbaca semua.</span>
+        <span class="err-msg photo-err"></span>
+        <div class="photo-box" hidden>
+          <img alt="Pratinjau foto akta lahir">
+          <div class="photo-row"><span class="hint photo-info"></span><button type="button" class="btn alt sm photo-remove">Hapus foto</button></div>
+        </div>
+      </div>
+
+      <div class="field" data-photo="kk">
+        <label for="foto_kk">Foto Kartu Keluarga <span class="opt">(opsional)</span></label>
+        <input id="foto_kk" class="photo-input" type="file" accept="image/*" aria-describedby="foto_kk-hint">
+        <span class="hint" id="foto_kk-hint">Foto atau scan Kartu Keluarga (KK) yang jelas dan terbaca semua.</span>
+        <span class="err-msg photo-err"></span>
+        <div class="photo-box" hidden>
+          <img alt="Pratinjau foto kartu keluarga">
+          <div class="photo-row"><span class="hint photo-info"></span><button type="button" class="btn alt sm photo-remove">Hapus foto</button></div>
+        </div>
+      </div>
+
+      <div class="field" data-photo="ktp">
+        <label for="foto_ktp">Foto KTP orang tua/wali <span class="opt">(opsional)</span></label>
+        <input id="foto_ktp" class="photo-input" type="file" accept="image/*" aria-describedby="foto_ktp-hint">
+        <span class="hint" id="foto_ktp-hint">KTP salah satu orang tua atau wali. Pastikan tulisan jelas dan tidak buram.</span>
+        <span class="err-msg photo-err"></span>
+        <div class="photo-box" hidden>
+          <img alt="Pratinjau foto ktp orang tua/wali">
+          <div class="photo-row"><span class="hint photo-info"></span><button type="button" class="btn alt sm photo-remove">Hapus foto</button></div>
+        </div>
+      </div>
+
+      <div class="hp" aria-hidden="true"><label>Jangan diisi <input id="website" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <div class="submit-bar"><button class="btn" id="submitBtn" type="submit">Kirim pendaftaran</button></div>
+    </form>
+  </section>
+
+  <section class="panel" id="donePanel" hidden>
+    <h2 id="doneHead">Pendaftaran terkirim</h2>
+    <p class="lead" id="doneName"></p>
+    <div class="nomor" id="doneNomor"></div>
+    <ul class="ul" id="uploadList"></ul>
+    <p class="note" id="doneNote"></p>
+    <div class="stack">
+      <button class="btn" id="retryBtn" type="button" hidden>Coba unggah ulang foto yang gagal</button>
+      <button class="btn alt" id="savePdfBtn" type="button">Simpan bukti pendaftaran (PDF)</button>
+      <a class="btn alt" id="viewBtn" href="#" target="_blank" rel="noopener">Lihat bukti PDF</a>
+      <a class="btn alt" id="helpBtn" href="#" target="_blank" rel="noopener" hidden>Hubungi panitia lewat WhatsApp</a>
+      <button class="btn alt" id="newBtn" type="button">Isi untuk taruna lain</button>
+    </div>
+  </section>
+</div>
+<div id="toast" role="status" hidden></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function () {
+  var CONFIG = Object.assign({ sekolah: "SMK PELAYARAN AKPELNI SEMARANG", tahunAjaran: "2027/2028", kuotaGratis: 100, whatsappPanitia: "" }, window.PPDB_CONFIG || {});
+
+  var $ = function (s) { return document.querySelector(s); };
+  var form = $("#form");
+  var KEY = "ppdb-formulir-v1";
+  var FIELD_NAMES = ["nama_lengkap", "tempat_lahir", "tanggal_lahir", "jenis_kelamin", "agama", "alamat", "asal_sekolah", "no_hp", "kompetensi", "nama_ayah", "nama_ibu", "pekerjaan_ayah", "pekerjaan_ibu", "no_hp_ortu", "no_hp_ortu_milik", "sumber_info", "sumber_detail"];
+  var AGAMA = ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"];
+  var KOMPETENSI = ["Nautika Kapal Niaga", "Teknika Kapal Niaga"];
+  var SUMBER = { "Alumni/Taruna SMKP Akpelni": "Nama alumni/taruna dan angkatan *", "Warung": "Nama warung *" };
+  var PHOTO_DEFS = [
+    { key: "diri", file: "pas_foto", label: "Pas foto", max: 1000 },
+    { key: "akte", file: "akta_lahir", label: "Akta Lahir", max: 1400 },
+    { key: "kk", file: "kartu_keluarga", label: "Kartu Keluarga", max: 1400 },
+    { key: "ktp", file: "ktp_orang_tua", label: "KTP orang tua/wali", max: 1400 }
+  ];
+  var photos = {};     /* key -> { blob, url, bytes, w, h }, hanya di memori */
+  var pending = 0;     /* foto yang masih diproses */
+  var current = null;  /* { nomor, nama, pdf, filename, caption, url, viewUrl } */
+
+  $("#eyebrow").textContent = CONFIG.sekolah + " · Tahun ajaran " + CONFIG.tahunAjaran;
+
+  var toastTimer;
+  function toast(msg) { var t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 4200); }
+  /* simpan isian teks di browser agar tidak hilang saat pindah aplikasi */
+  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+  function save(patch) { try { localStorage.setItem(KEY, JSON.stringify(Object.assign(load(), patch))); } catch (e) {} }
+  function clearAll() { try { localStorage.removeItem(KEY); } catch (e) {} }
+  var draftTimer;
+  form.addEventListener("input", function () {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(function () { save({ draft: readForm() }); }, 300);
+  });
+  function syncSumber() {
+    var v = form.elements.sumber_info.value, box = $("#sumberDetailField");
+    box.hidden = !SUMBER[v];
+    if (SUMBER[v]) $("#sumberDetailLabel").textContent = SUMBER[v]; else form.elements.sumber_detail.value = "";
+  }
+  form.elements.sumber_info.addEventListener("change", syncSumber);
+  function readForm() { var d = {}; FIELD_NAMES.forEach(function (k) { d[k] = String(form.elements[k].value || "").trim(); }); return d; }
+  function fillForm(d) { FIELD_NAMES.forEach(function (k) { if (d && d[k] != null) form.elements[k].value = d[k]; }); syncSumber(); }
+
+  function validate(d) {
+    var e = {};
+    if (!d.nama_lengkap) e.nama_lengkap = "Nama lengkap wajib diisi.";
+    if (!d.tempat_lahir) e.tempat_lahir = "Tempat lahir wajib diisi.";
+    if (!d.tanggal_lahir) e.tanggal_lahir = "Tanggal lahir wajib diisi.";
+    if (d.jenis_kelamin !== "Laki-laki" && d.jenis_kelamin !== "Perempuan") e.jenis_kelamin = "Pilih jenis kelamin.";
+    if (AGAMA.indexOf(d.agama) < 0) e.agama = "Pilih agama.";
+    if (!d.alamat) e.alamat = "Alamat wajib diisi.";
+    if (!d.asal_sekolah) e.asal_sekolah = "Asal SMP/MTs wajib diisi.";
+    if (!/^\d{9,15}$/.test(d.no_hp)) e.no_hp = "No. WA berupa angka, 9 sampai 15 digit.";
+    if (KOMPETENSI.indexOf(d.kompetensi) < 0) e.kompetensi = "Pilih kompetensi keahlian.";
+    if (!d.nama_ayah && !d.nama_ibu) e.nama_ayah = "Isi nama bapak atau nama ibu.";
+    if (!/^\d{9,15}$/.test(d.no_hp_ortu)) e.no_hp_ortu = "No. WA berupa angka, 9 sampai 15 digit.";
+    if (d.no_hp_ortu_milik !== "Bapak" && d.no_hp_ortu_milik !== "Ibu") e.no_hp_ortu_milik = "Pilih Bapak atau Ibu.";
+    if (!d.sumber_info) e.sumber_info = "Pilih salah satu.";
+    else if (SUMBER[d.sumber_info] && !d.sumber_detail) e.sumber_detail = "Wajib diisi.";
+    return e;
+  }
+  function showErrors(errs) {
+    form.querySelectorAll("[data-err]").forEach(function (el) {
+      var k = el.getAttribute("data-err");
+      el.textContent = errs[k] || "";
+      var input = form.elements[k];
+      if (input) input.setAttribute("aria-invalid", errs[k] ? "true" : "false");
+    });
+  }
+  function makeNomor() {
+    var abc = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", s = "", buf = new Uint8Array(5);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(buf);
+    else for (var j = 0; j < 5; j++) buf[j] = Math.floor(Math.random() * 256);
+    for (var i = 0; i < 5; i++) s += abc[buf[i] % abc.length];
+    return "PSB-" + new Date().getFullYear() + "-" + s;
+  }
+  function slug(name) {
+    return String(name).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "siswa";
+  }
+  function dmy(iso) { var p = String(iso).split("-"); return p.length === 3 ? p[2] + "-" + p[1] + "-" + p[0] : iso; }
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ---------- foto: dikecilkan di HP agar PDF ringan ---------- */
+  function compress(file, max) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var w = img.naturalWidth, h = img.naturalHeight, s = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement("canvas"); c.width = Math.round(w * s); c.height = Math.round(h * s);
+        var ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(function (b) {
+          if (!b) { reject(new Error("blob")); return; }
+          b.arrayBuffer().then(function (buf) { resolve({ blob: b, bytes: new Uint8Array(buf), w: c.width, h: c.height }); }, reject);
+        }, "image/jpeg", 0.78);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("img")); };
+      img.src = url;
+    });
+  }
+  PHOTO_DEFS.forEach(function (def) {
+    var root = document.querySelector('[data-photo="' + def.key + '"]');
+    var input = root.querySelector(".photo-input"), err = root.querySelector(".photo-err"), box = root.querySelector(".photo-box");
+    var img = root.querySelector("img"), info = root.querySelector(".photo-info");
+    def.clear = function () {
+      var p = photos[def.key];
+      if (p && p.url) URL.revokeObjectURL(p.url);
+      delete photos[def.key];
+      box.hidden = true; input.value = ""; err.textContent = "";
+    };
+    input.addEventListener("change", function () {
+      var f = input.files && input.files[0];
+      err.textContent = "";
+      if (!f) return;
+      if (f.type && !/^image\//.test(f.type)) { err.textContent = "File harus berupa foto (JPG atau PNG)."; input.value = ""; return; }
+      if (f.size > 20 * 1024 * 1024) { err.textContent = "Ukuran foto lebih dari 20 MB."; input.value = ""; return; }
+      pending++;
+      compress(f, def.max).then(function (r) {
+        if (photos[def.key] && photos[def.key].url) URL.revokeObjectURL(photos[def.key].url);
+        r.url = URL.createObjectURL(r.blob);
+        photos[def.key] = r;
+        img.src = r.url;
+        info.textContent = "Siap dikirim, " + Math.max(1, Math.round(r.blob.size / 1024)) + " KB";
+        box.hidden = false;
+      }).catch(function () { err.textContent = "Foto tidak bisa dibaca. Coba foto lain."; input.value = ""; })
+        .then(function () { pending--; });
+    });
+    root.querySelector(".photo-remove").addEventListener("click", def.clear);
+  });
+  function clearPhotos() { PHOTO_DEFS.forEach(function (d) { d.clear(); }); }
+
+  /* ---------- pembuat PDF (tanpa library, jalan offline) ---------- */
+  var HELV = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+  function pdfSafe(s) {
+    s = String(s == null ? "" : s).replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/…/g, "...");
+    return s.split("").map(function (ch) {
+      var c = ch.charCodeAt(0);
+      if ((c >= 32 && c <= 126) || (c >= 160 && c <= 255)) return ch;
+      var base = ch.normalize("NFD").replace(/[̀-ͯ]/g, "");
+      var bc = base.charCodeAt(0);
+      return base.length === 1 && bc >= 32 && bc <= 126 ? base : "?";
+    }).join("");
+  }
+  function pdfEsc(s) { return s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)"); }
+  function toBytes(s) { var a = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 255; return a; }
+  function textWidth(s, size) {
+    var w = 0;
+    for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); w += (c >= 32 && c <= 126 ? HELV[c - 32] : 556); }
+    return w / 1000 * size;
+  }
+  function wrap(str, size, maxW) {
+    var lines = [], words = pdfSafe(str).split(/\s+/).filter(Boolean), line = "";
+    words.forEach(function (w) {
+      var test = line ? line + " " + w : w;
+      if (textWidth(test, size) <= maxW) { line = test; return; }
+      if (line) lines.push(line);
+      line = "";
+      while (textWidth(w, size) > maxW) {
+        var k = w.length; while (k > 1 && textWidth(w.slice(0, k), size) > maxW) k--;
+        lines.push(w.slice(0, k)); w = w.slice(k);
+      }
+      line = w;
+    });
+    if (line) lines.push(line);
+    return lines.length ? lines : ["-"];
+  }
+  function PdfOut() { this.parts = []; this.len = 0; this.offsets = []; }
+  PdfOut.prototype.raw = function (x) { var b = typeof x === "string" ? toBytes(x) : x; this.parts.push(b); this.len += b.length; };
+  PdfOut.prototype.obj = function (n, body) { this.offsets[n] = this.len; this.raw(n + " 0 obj\n" + body + "\nendobj\n"); };
+  PdfOut.prototype.stream = function (n, dict, bytes) {
+    this.offsets[n] = this.len;
+    this.raw(n + " 0 obj\n<< " + dict + " /Length " + bytes.length + " >>\nstream\n"); this.raw(bytes); this.raw("\nendstream\nendobj\n");
+  };
+  function Page() { this.ops = []; this.imgs = []; }
+  Page.prototype.text = function (x, y, size, str, o) {
+    o = o || {};
+    this.ops.push("BT " + (o.color || "0.07 0.14 0.12") + " rg /" + (o.bold ? "F2" : "F1") + " " + size + " Tf " + x.toFixed(2) + " " + y.toFixed(2) + " Td (" + pdfEsc(pdfSafe(str)) + ") Tj ET");
+  };
+  Page.prototype.line = function (x1, y1, x2, y2) { this.ops.push("0.83 0.87 0.85 RG 0.6 w " + x1 + " " + y1 + " m " + x2 + " " + y2 + " l S"); };
+  Page.prototype.rect = function (x, y, w, h, fill) { this.ops.push(fill + " rg " + x + " " + y + " " + w + " " + h + " re f"); };
+  Page.prototype.frame = function (x, y, w, h) { this.ops.push("0.83 0.87 0.85 RG 0.8 w " + x + " " + y + " " + w + " " + h + " re S"); };
+  Page.prototype.image = function (k, im, bx, by, bw, bh) {
+    var s = Math.min(bw / im.w, bh / im.h), w = im.w * s, h = im.h * s, x = bx + (bw - w) / 2, y = by + (bh - h) / 2;
+    if (this.imgs.indexOf(k) < 0) this.imgs.push(k);
+    this.ops.push("q " + w.toFixed(2) + " 0 0 " + h.toFixed(2) + " " + x.toFixed(2) + " " + y.toFixed(2) + " cm /Im" + k + " Do Q");
+  };
+
+  function makePdf(d, nomor, when) {
+    var MUTED = "0.35 0.40 0.45";
+    var imgList = [], diriK = -1, docs = [];
+    if (photos.diri) { diriK = imgList.length; imgList.push(photos.diri); }
+    PHOTO_DEFS.forEach(function (def) {
+      if (def.key === "diri") return;
+      if (photos[def.key]) { docs.push({ def: def, k: imgList.length, im: photos[def.key], page: docs.length + 2 }); imgList.push(photos[def.key]); }
+    });
+    var missing = PHOTO_DEFS.filter(function (def) { return def.key !== "diri" && !photos[def.key]; }).map(function (def) { return def.label; });
+    var sent = pad2(when.getDate()) + "-" + pad2(when.getMonth() + 1) + "-" + when.getFullYear() + " " + pad2(when.getHours()) + ":" + pad2(when.getMinutes());
+    var pages = [], p1 = new Page(); pages.push(p1);
+
+    var NAVY = "0.06 0.16 0.30", GOLD = "0.80 0.62 0.20", SOFT = "0.93 0.95 0.97", WHITE = "1 1 1";
+    function band(pg, h, big) {
+      pg.rect(0, 842 - h, 595, h, NAVY);
+      pg.rect(0, 842 - h - 4, 595, 4, GOLD);
+      var name = CONFIG.sekolah.toUpperCase(), sz = Math.min(big ? 18 : 14, 495 / textWidth(pdfSafe(name), 1) * 1);
+      pg.text(50, 842 - (big ? 40 : 30), 8.5, big ? "PENERIMAAN TARUNA BARU" : "LAMPIRAN FORMULIR PENDAFTARAN", { bold: true, color: GOLD });
+      pg.text(50, 842 - (big ? 66 : 52), sz, name, { bold: true, color: WHITE });
+      if (big) {
+        pg.text(50, 842 - 92, 11, "FORMULIR PENDAFTARAN CALON TARUNA", { color: WHITE });
+        var t = "TA " + CONFIG.tahunAjaran;
+        pg.text(545 - textWidth(t, 11), 842 - 92, 11, t, { bold: true, color: GOLD });
+      }
+    }
+
+    /* halaman 1: kepala, nomor, foto diri besar, data */
+    band(p1, 118, true);
+    p1.rect(50, 590, 340, 100, SOFT);
+    p1.rect(50, 590, 4, 100, GOLD);
+    p1.text(68, 668, 8.5, "NO. PENDAFTARAN", { bold: true, color: MUTED });
+    p1.text(68, 642, 22, nomor, { bold: true, color: NAVY });
+    p1.text(68, 616, 8.5, "TANGGAL KIRIM", { bold: true, color: MUTED });
+    p1.text(68, 600, 11, sent);
+    p1.frame(415, 520, 130, 173);
+    if (diriK >= 0) p1.image(diriK, photos.diri, 417, 522, 126, 169);
+    else p1.text(436, 604, 9, "Foto tidak dilampirkan", { color: MUTED });
+    p1.text(415, 507, 8.5, "Pas foto calon taruna", { color: MUTED });
+    var dash = function (v) { return v || "-"; };
+    var sections = [
+      ["DATA CALON TARUNA", [
+        ["Nama lengkap", d.nama_lengkap, true], ["Tempat, tanggal lahir", d.tempat_lahir + ", " + dmy(d.tanggal_lahir)],
+        ["Jenis kelamin", d.jenis_kelamin], ["Agama", d.agama], ["Alamat rumah", d.alamat], ["Asal SMP/MTs", d.asal_sekolah],
+        ["No. WA calon taruna", d.no_hp], ["Kompetensi keahlian", d.kompetensi, true]
+      ]],
+      ["DATA ORANG TUA", [
+        ["Nama bapak", dash(d.nama_ayah)], ["Nama ibu", dash(d.nama_ibu)],
+        ["Pekerjaan bapak", dash(d.pekerjaan_ayah)], ["Pekerjaan ibu", dash(d.pekerjaan_ibu)],
+        ["No. WA orang tua", d.no_hp_ortu + " (" + d.no_hp_ortu_milik + ")"]
+      ]],
+      ["INFORMASI PENDAFTARAN", [
+        ["Biaya pendaftaran", "GRATIS untuk 100 pendaftar pertama"],
+        ["Mengetahui info PPDB dari", d.sumber_info + (d.sumber_detail ? " - " + d.sumber_detail : "")],
+        ["Dokumen terlampir", docs.length ? docs.map(function (x) { return x.def.label + " (hal. " + x.page + ")"; }).join(", ") : "Tidak ada"]
+      ].concat(missing.length ? [["Belum dilampirkan", missing.join(", ")]] : [])]
+    ];
+    var y = 490;
+    sections.forEach(function (sec, si) {
+      p1.text(50, y, 9, sec[0], { bold: true, color: NAVY });
+      p1.rect(50, y - 5, 495, 1.5, NAVY);
+      y -= 6;
+      sec[1].forEach(function (r, ri) {
+        var lines = wrap(r[1], 10.5, 320), h = lines.length * 13 + 8;
+        if (ri % 2 === 0) p1.rect(50, y - h, 495, h, SOFT);
+        p1.text(58, y - 13, 9.5, r[0], { color: MUTED });
+        lines.forEach(function (ln, i) { p1.text(215, y - 13 - i * 13, 10.5, ln, { bold: !!r[2] }); });
+        y -= h;
+      });
+      y -= 16;
+    });
+
+    /* satu halaman penuh untuk tiap dokumen */
+    docs.forEach(function (x) {
+      var pg = new Page(); pages.push(pg);
+      band(pg, 78, false);
+      pg.text(545 - textWidth(pdfSafe(nomor), 10), 842 - 30, 10, nomor, { bold: true, color: GOLD });
+      pg.text(50, 842 - 98, 11, "LAMPIRAN: " + x.def.label.toUpperCase(), { bold: true, color: NAVY });
+      var nm = pdfSafe(d.nama_lengkap); pg.text(545 - textWidth(nm, 10), 842 - 98, 10, nm, { color: MUTED });
+      pg.frame(50, 55, 495, 672);
+      pg.image(x.k, x.im, 53, 58, 489, 666);
+    });
+    pages.forEach(function (pg, i) {
+      pg.rect(0, 0, 595, 3, NAVY);
+      pg.text(50, 24, 8, CONFIG.sekolah + " · PPDB " + CONFIG.tahunAjaran + " · " + nomor, { color: MUTED });
+      var t = "Halaman " + (i + 1) + " dari " + pages.length;
+      pg.text(545 - textWidth(t, 8), 24, 8, t, { color: MUTED });
+    });
+
+    /* data terbaca mesin untuk panel admin (disimpan di Info dictionary) */
+    var payload = { type: "psb-formulir", versi: 1, no_pendaftaran: nomor, dikirim: when.toISOString(), sekolah: CONFIG.sekolah, data: d };
+    var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+    var nImg = imgList.length, nPages = pages.length, base = 5 + nImg, infoNum = base + 2 * nPages, size = infoNum + 1;
+    var out = new PdfOut();
+    out.raw("%PDF-1.4\n%âãÏÓ\n");
+    out.obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
+    out.obj(2, "<< /Type /Pages /Kids [" + pages.map(function (_, i) { return (base + 2 * i) + " 0 R"; }).join(" ") + "] /Count " + nPages + " >>");
+    out.obj(3, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+    out.obj(4, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+    imgList.forEach(function (im, k) {
+      out.stream(5 + k, "/Type /XObject /Subtype /Image /Width " + im.w + " /Height " + im.h + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode", im.bytes);
+    });
+    pages.forEach(function (pg, i) {
+      var pn = base + 2 * i, cn = pn + 1;
+      var xo = pg.imgs.map(function (k) { return "/Im" + k + " " + (5 + k) + " 0 R"; }).join(" ");
+      out.obj(pn, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> /XObject << " + xo + " >> >> /Contents " + cn + " 0 R >>");
+      out.stream(cn, "", toBytes(pg.ops.join("\n")));
+    });
+    out.obj(infoNum, "<< /Title (" + pdfEsc(pdfSafe("Formulir PPDB " + nomor)) + ") /Author (" + pdfEsc(pdfSafe(d.nama_lengkap)) + ") /Creator (Formulir PPDB) /PSBData (PSB1:" + b64 + ") >>");
+    var xrefAt = out.len, xref = "xref\n0 " + size + "\n0000000000 65535 f \n";
+    for (var n = 1; n < size; n++) xref += ("0000000000" + out.offsets[n]).slice(-10) + " 00000 n \n";
+    out.raw(xref + "trailer\n<< /Size " + size + " /Root 1 0 R /Info " + infoNum + " 0 R >>\nstartxref\n" + xrefAt + "\n%%EOF\n");
+    return new Blob(out.parts, { type: "application/pdf" });
+  }
+
+  /* ---------- kirim ke Supabase ---------- */
+  var sb = null, rec = null, busy = false, sending = false;
+  var cfgOk = CONFIG.supabaseUrl && CONFIG.supabaseKey && !/ISI_/.test(CONFIG.supabaseUrl + CONFIG.supabaseKey);
+  if (cfgOk && window.supabase) { try { sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } }); } catch (e) { sb = null; } }
+  if (!sb) $("#cfgWarn").hidden = false;
+  window.addEventListener("beforeunload", function (e) { if (busy || sending) { e.preventDefault(); e.returnValue = ""; } });
+
+  var ST = { proses: ["Mengunggah...", ""], ok: ["Terkirim", "st-ok"], gagal: ["Gagal", "st-gagal"], no: ["Tidak dilampirkan", "st-no"] };
+  function renderUploads() {
+    $("#uploadList").innerHTML = PHOTO_DEFS.map(function (def) {
+      var st = !photos[def.key] ? "no" : (rec.st[def.key] || "proses"), t = ST[st];
+      return "<li><span>" + def.label + '</span><span class="' + t[1] + '">' + t[0] + "</span></li>";
+    }).join("");
+  }
+  function failedCount() { return PHOTO_DEFS.filter(function (d) { return photos[d.key] && rec.st[d.key] !== "ok"; }).length; }
+  function refreshDoneState() {
+    var f = failedCount();
+    $("#doneHead").textContent = f ? "Data tersimpan, foto belum lengkap" : "Pendaftaran berhasil terkirim";
+    $("#retryBtn").hidden = !f || busy;
+    $("#doneNote").textContent = f
+      ? "Data Anda sudah diterima, tetapi " + f + " foto belum terunggah. Jangan tutup halaman ini, tekan tombol Coba unggah ulang. Jika tetap gagal, hubungi panitia dengan menyebut nomor pendaftaran."
+      : "Simpan nomor pendaftaran ini. Panitia akan menghubungi Anda lewat WhatsApp untuk informasi selanjutnya.";
+  }
+  async function uploadAll() {
+    if (busy || !rec) return;
+    busy = true; refreshDoneState();
+    for (var i = 0; i < PHOTO_DEFS.length; i++) {
+      var def = PHOTO_DEFS[i];
+      if (!photos[def.key] || rec.st[def.key] === "ok") continue;
+      rec.st[def.key] = "proses"; renderUploads();
+      var ok = false;
+      try {
+        var r = await sb.storage.from("berkas").upload(rec.nomor + "/" + def.file + ".jpg", photos[def.key].blob, { contentType: "image/jpeg", upsert: false });
+        var e = r && r.error;
+        ok = !e || /already exists|duplicate/i.test(String(e.message || "")) || String(e.statusCode) === "409";
+      } catch (err) { ok = false; }
+      rec.st[def.key] = ok ? "ok" : "gagal";
+      renderUploads();
+    }
+    busy = false; refreshDoneState();
+  }
+  function revokeCurrent() { if (rec && rec.viewUrl) URL.revokeObjectURL(rec.viewUrl); }
+  function savePdf() {
+    if (!rec || !rec.pdf) return;
+    var a = document.createElement("a"); a.href = rec.viewUrl; a.download = rec.filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    toast("Bukti PDF disimpan di folder Unduhan.");
+  }
+  function errText(err) {
+    var m = String((err && (err.message || err.details)) || "");
+    if (/sudah_terdaftar/.test(m)) return "Data atas nama ini sudah pernah terdaftar. Hubungi panitia jika perlu bantuan.";
+    if (/terlalu_banyak/.test(m)) return "Server sedang ramai. Tunggu satu menit lalu coba lagi.";
+    if (/data_tidak_valid/.test(m)) return "Ada isian yang tidak sesuai. Periksa kembali tanggal lahir dan nomor WA.";
+    return "Pendaftaran belum terkirim. Periksa sambungan internet lalu coba lagi.";
+  }
+  form.addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    if (sending) return;
+    var d = readForm();
+    var errs = validate(d);
+    showErrors(errs);
+    var first = Object.keys(errs)[0];
+    if (first) { form.elements[first].focus(); return; }
+    if (pending > 0) { toast("Foto masih diproses, coba lagi sebentar."); return; }
+    if (form.elements.website.value) { return; } /* jebakan bot */
+    if (!sb) { toast("Aplikasi belum disambungkan ke Supabase."); return; }
+    sending = true;
+    var btn = $("#submitBtn"); btn.disabled = true; btn.textContent = "Mengirim...";
+    var res;
+    try { res = await sb.rpc("daftar", { p: d }); } catch (e) { res = { error: e }; }
+    sending = false; btn.disabled = false; btn.textContent = "Kirim pendaftaran";
+    if (res.error || !res.data || !res.data.nomor) { toast(errText(res.error)); return; }
+    var when = new Date(res.data.dibuat || Date.now());
+    if (isNaN(when)) when = new Date();
+    revokeCurrent();
+    var pdf = null;
+    try { pdf = makePdf(d, res.data.nomor, when); } catch (e) {}
+    rec = { nomor: res.data.nomor, nama: d.nama_lengkap, st: {}, pdf: pdf, filename: "Bukti-PPDB_" + res.data.nomor + "_" + slug(d.nama_lengkap) + ".pdf", viewUrl: pdf ? URL.createObjectURL(pdf) : "#" };
+    save({ draft: null });
+    $("#doneName").textContent = d.nama_lengkap;
+    $("#doneNomor").textContent = res.data.nomor;
+    $("#viewBtn").href = rec.viewUrl; $("#savePdfBtn").hidden = $("#viewBtn").hidden = !pdf;
+    $("#formPanel").hidden = true; $("#donePanel").hidden = false;
+    window.scrollTo(0, 0);
+    renderUploads(); refreshDoneState();
+    uploadAll();
+  });
+  $("#retryBtn").addEventListener("click", uploadAll);
+  $("#savePdfBtn").addEventListener("click", savePdf);
+  $("#newBtn").addEventListener("click", function () {
+    if (busy && !confirm("Foto masih diunggah. Yakin pindah?")) return;
+    revokeCurrent(); clearAll(); form.reset(); syncSumber(); clearPhotos(); showErrors({}); rec = null;
+    $("#donePanel").hidden = true; $("#formPanel").hidden = false; window.scrollTo(0, 0); form.elements.nama_lengkap.focus();
+  });
+  var wa = String(CONFIG.whatsappPanitia || "").replace(/\D/g, "");
+  if (wa) { $("#helpBtn").href = "https://wa.me/" + wa; $("#helpBtn").hidden = false; }
+
+  var saved = load();
+  if (saved.draft) fillForm(saved.draft);
+})();
+</script>
+
+</body>
+</html>
